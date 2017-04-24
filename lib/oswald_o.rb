@@ -2,16 +2,22 @@ require 'json'
 
 class OswaldO
   def initialize(data, options = {})
-    @hash = options[:json] ? JSON.parse(data) : data
+    @data = options[:json] ? JSON.parse(data) : data
+
+    if @data.is_a?(Array)
+      @data = @data.map { |item| item.is_a?(Hash) ? OswaldO.new(item) : item }
+    end
   end
 
-  def method_missing(m, *args, &block)
-    super unless @hash.respond_to?(m) || @hash.has_key?(m) || @hash.has_key?(m.to_s)
+  private
 
-    value = if @hash.respond_to?(m)
-      @hash.send(m, *args, &block)
+  def method_missing(m, *args, &block)
+    super unless @data.respond_to?(m) || @data.has_key?(m) || @data.has_key?(m.to_s)
+
+    value = if @data.respond_to?(m)
+      @data.send(m, *args, &block)
     else
-      @hash[m] || @hash[m.to_s]
+      @data[m] || @data[m.to_s]
     end
 
     if value.is_a?(Hash)

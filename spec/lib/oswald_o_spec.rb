@@ -2,10 +2,10 @@ require 'spec_helper'
 
 describe OswaldO do
   describe 'an oswald instance' do
-    let(:hash) { { a: 1, b: 2, c: 3, 'd' => 4, e: nil } }
+    let(:data) { { a: 1, b: 2, c: 3, 'd' => 4, e: nil } }
     let(:options) { {} }
 
-    subject { OswaldO.new(hash, options) }
+    subject(:oswald_instance) { OswaldO.new(data, options) }
 
     its(:a) { should eql(1) }
     its(:b) { should eql(2) }
@@ -13,57 +13,57 @@ describe OswaldO do
     its(:d) { should eql(4) }
     its(:e) { should eql(nil) }
 
-    context 'when the hash contains an inner hash' do
-      let(:hash) { { a: { b: 1 } } }
+    context 'when the data hash contains an inner hash' do
+      let(:data) { { a: { b: 1 } } }
 
       its(:a) { should be_kind_of(OswaldO) }
 
       it 'returns the inner value by chaining keys' do
-        expect(subject.a.b).to eql(hash[:a][:b])
+        expect(subject.a.b).to eql(data[:a][:b])
       end
     end
 
-    context 'when the hash contains an array' do
-      let(:hash) { { a: [1, 2, 3] } }
+    context 'when the data hash contains an array' do
+      let(:data) { { a: [1, 2, 3] } }
 
-      its(:a) { should be_kind_of(Array) }
+      its(:a) { is_expected.to be_kind_of(Array) }
 
       describe 'the inner array' do
-        subject { OswaldO.new(hash).a }
+        subject { oswald_instance.a }
 
         it 'behaves normally' do
-          expect(subject[0]).to eql(hash[:a][0])
+          expect(subject[0]).to eql(data[:a][0])
         end
       end
 
       context 'when the array contains a hash' do
-        let(:hash) { { a: [b: 1] } }
+        let(:data) { { a: [b: 1] } }
 
-        its(:a) { should be_kind_of(Array) }
+        its(:a) { is_expected.to be_kind_of(Array) }
 
         describe 'the inners array hash elements' do
-          subject { OswaldO.new(hash).a[0] }
+          subject { oswald_instance.a.first }
 
-          its(:b) { should eql(hash[:a][0][:b]) }
+          its(:b) { is_expected.to eql data[:a].first[:b] }
         end
       end
     end
 
     context 'when the data is an array' do
-      let(:hash) { [{ name: 'Batman'}, { name: 'Green Lantern' }] }
+      let(:data) { [{ name: 'Batman'}, { name: 'Green Lantern' }] }
 
       it { is_expected.to be_kind_of(OswaldO) }
       its(:first) { is_expected.to be_kind_of(OswaldO) }
 
       describe 'its first child' do
-        subject { OswaldO.new(hash, options).first }
+        subject { OswaldO.new(data, options).first }
 
-        its(:name) { is_expected.to eql hash.first[:name] }
+        its(:name) { is_expected.to eql data.first[:name] }
       end
     end
 
     context 'when the data is a json' do
-      let(:hash) { { id: 1, name: 'Batman' }.to_json }
+      let(:data) { { id: 1, name: 'Batman' }.to_json }
 
       let(:options) {{ json: true }}
 
